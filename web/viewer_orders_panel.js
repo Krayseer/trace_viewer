@@ -50,8 +50,6 @@ export function initOrdersPane() {
   resizer.setAttribute("aria-valuemin", minWidth);
   resizer.addEventListener("pointerdown", event => {
     if (!event.isPrimary || event.button !== 0) return;
-    event.preventDefault();
-    resizer.focus({preventScroll: true});
     drag = {id: event.pointerId, x: event.clientX, width: pane.getBoundingClientRect().width};
     resizer.setPointerCapture(drag.id);
     workspace.dataset.ordersResizing = "";

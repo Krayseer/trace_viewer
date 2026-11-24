@@ -172,8 +172,6 @@ function renderOrderSheet() {
 function renderOrder() {
   const o = app.order;
   renderOrderSheet();
-  get("orderNumber").textContent = `Заказ ${o.row}`;
-  get("orderNumber").hidden = false;
   get("orderTitle").textContent = o.name.trim() || (o.product ? `Изделие ${o.product}` : "Наименование отсутствует");
   get("orderProduct").textContent = visValue(o.product);
   get("orderRaw").textContent = visValue(o.raw);
@@ -183,7 +181,9 @@ function renderOrder() {
   get("orderExtra").textContent = typeof o.extra === "number" ? `${formatNumber.format(o.extra)} т` : visValue(o.extra);
   get("orderExtraField").hidden = o.extra === 0 || o.extra === "" || o.extra == null;
   get("orderFacts").hidden = false;
-  get("openOrder").hidden = false;
+  const sourceButton = get("openOrder");
+  sourceButton.textContent = `Строка XLS · ${o.row}`;
+  sourceButton.hidden = false;
 }
 
 async function selectOrder(month, order, scroll = true) {
@@ -252,7 +252,7 @@ async function loadTrace(recipe = get("recipe").value || "auto") {
       return sectionWithTable(stage, stage.title);
     }));
     get("content").hidden = false;
-    get("status").textContent = `Маршрут заказа ${app.order.row} обновлён`;
+    get("status").textContent = "Маршрут заказа обновлён";
   } catch (error) {
     if (ticket !== app.request) return;
     get("content").hidden = true;
@@ -542,10 +542,6 @@ get("filters").addEventListener("submit", event => {
 });
 get("recipeLabel").append(helpButton("Версия шихты",
   "Версии сгруппированы по сроку действия и совпадению доп. марки заказа. Технологическая допустимость требует подтверждения."));
-get("orderModeLabel").append(helpButton("Отбор заказов",
-  "Оценка за весь выбранный месяц, по обеим сменам и при автоматическом выборе шихты. В оба режима отбора входят заказы с подходящими записями подачи, дозирования и прессовки.",
-  "Выше заказы с большим числом этапов, где есть хотя бы одна запись без расхождения. При равенстве учитываются число этапов с расхождениями, неоднозначность и совпадение шихты, даты и смены в дозировании и прессовке.",
-  "Записи подачи подбираются по компоненту и дате. Для подтверждения переходов нужна связь между партиями."));
 get("openOrder").addEventListener("click", event =>
   openSource({file: 1, month: app.month, row: app.order.row}, event.currentTarget));
 

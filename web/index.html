@@ -24,10 +24,10 @@
             </div>
             <div>
               <label for="orderSearch">Поиск заказа</label>
-              <div class="search-field"><input id="orderSearch" type="search" placeholder="Номер, марка, код" autocomplete="off"></div>
+              <div class="search-field"><input id="orderSearch" type="search" placeholder="Строка, марка, код" autocomplete="off"></div>
             </div>
             <div class="order-mode-field">
-              <div id="orderModeLabel" class="field-label"><label for="orderMode">Отбор заказов</label></div>
+              <label for="orderMode">Отбор заказов</label>
               <div class="select-field">
                 <select id="orderMode">
                   <option value="all">Все заказы</option>
@@ -49,11 +49,8 @@
     <main id="main" aria-busy="true">
       <header class="order">
         <div class="order-heading">
-          <div class="order-identity">
-            <p id="orderNumber" class="order-number" hidden></p>
-            <h1 id="orderTitle">Загрузка заказов…</h1>
-          </div>
-          <button type="button" id="openOrder" class="quiet" aria-label="Строка XLS выбранного заказа" hidden>Строка XLS</button>
+          <h1 id="orderTitle">Загрузка заказов…</h1>
+          <button type="button" id="openOrder" class="quiet" hidden>Строка XLS</button>
         </div>
         <dl id="orderFacts" class="order-facts" hidden>
           <div><dt>Код изделия</dt><dd id="orderProduct"></dd></div>
