@@ -568,6 +568,7 @@ async function init() {
 }
 
 function initWorkbookAccess() {
+  const storageKey = "trace-viewer.workbook-key";
   const form = get("unlockBooks");
   const key = get("workbookKey");
   const submit = get("unlockButton");
@@ -577,9 +578,7 @@ function initWorkbookAccess() {
   get("orderTitle").textContent = "Маршрут заказа";
   get("main").setAttribute("aria-busy", "false");
 
-  form.addEventListener("submit", async event => {
-    event.preventDefault();
-    const value = key.value.trim();
+  async function unlock(value) {
     key.disabled = submit.disabled = true;
     submit.textContent = "Открываю XLS…";
     report();
@@ -587,17 +586,38 @@ function initWorkbookAccess() {
       const {openWorkbookApi} = await import("./viewer_workbooks.js");
       workbookApi = await openWorkbookApi(value);
     } catch (error) {
+      try {
+        sessionStorage.removeItem(storageKey);
+      } catch {
+        // Access still works when the browser blocks storage.
+      }
       report(error.message);
       key.disabled = submit.disabled = false;
       submit.textContent = "Открыть";
       key.select();
       return;
     }
+    try {
+      sessionStorage.setItem(storageKey, value);
+    } catch {
+      // The current page can stay open without saving the key.
+    }
     key.value = "";
     form.hidden = true;
     for (const control of search) control.disabled = false;
     await init();
+  }
+
+  form.addEventListener("submit", event => {
+    event.preventDefault();
+    unlock(key.value.trim());
   });
+  try {
+    const savedKey = sessionStorage.getItem(storageKey);
+    if (savedKey) unlock(savedKey);
+  } catch {
+    // The form stays available when the browser blocks storage.
+  }
 }
 
 initOrdersPane();
