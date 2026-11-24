@@ -587,7 +587,7 @@ function initWorkbookAccess() {
       workbookApi = await openWorkbookApi(value);
     } catch (error) {
       try {
-        sessionStorage.removeItem(storageKey);
+        if (sessionStorage.getItem(storageKey) === value) sessionStorage.removeItem(storageKey);
       } catch {
         // Access still works when the browser blocks storage.
       }
@@ -612,6 +612,22 @@ function initWorkbookAccess() {
     event.preventDefault();
     unlock(key.value.trim());
   });
+
+  function unlockFromLink() {
+    const url = new URL(window.location.href);
+    const fragment = new URLSearchParams(url.hash.slice(1));
+    const linkedKey = fragment.get("key");
+    if (linkedKey === null) return false;
+
+    fragment.delete("key");
+    url.hash = fragment.toString();
+    history.replaceState(history.state, "", url);
+    if (!form.hidden && !submit.disabled) unlock(linkedKey.trim());
+    return true;
+  }
+
+  window.addEventListener("hashchange", unlockFromLink);
+  if (unlockFromLink()) return;
   try {
     const savedKey = sessionStorage.getItem(storageKey);
     if (savedKey) unlock(savedKey);
