@@ -1,10 +1,8 @@
-"use strict";
-
-const get = id => document.getElementById(id);
-const labels = {
-  empty: "Нет строк", match: "Совпали поля", conflict: "Расхождение",
-  context: "Контекст", candidate: "Кандидаты", outside: "Вне периода",
-};
+import {
+  badge, button, el, formatNumber, get, helpButton, labels, plural, positionHelp, rowCount, tooltipButton, visValue,
+} from "./viewer_ui.js";
+import {addSortHeaders, commonBasis, sortRows, stageBody} from "./viewer_table.js";
+import {initOrdersPane} from "./viewer_orders_panel.js";
 const route = [
   [3, "Подача порошков"], [4, "Дозирование"], [6, "Прессовка"], [7, "Садка"],
   [8, "Печи"], [9, "Дополнительные операции"], [10, "Сдача"],
@@ -55,97 +53,8 @@ const app = {
   request: 0, pickerRequest: 0, sourceRequest: 0,
   stages: new Map(), transitions: new Map(), stage: null, connection: null,
 };
-const formatNumber = new Intl.NumberFormat("ru-RU", {maximumFractionDigits: 8});
-const sortText = new Intl.Collator("ru", {numeric: true, sensitivity: "base"});
-const plural = new Intl.PluralRules("ru-RU");
-const rowForms = {one: "строка", few: "строки", many: "строк", other: "строк"};
-const datePattern = /^([0-9]{4})-([0-9]{2})-([0-9]{2})(T[0-9:]+)?$/;
-const helpPopover = get("fieldHelp");
 const sourceDialog = get("sourceDialog");
-let helpTrigger = null;
 let sourceTrigger = null;
-
-function el(tag, value, className) {
-  const node = document.createElement(tag);
-  if (value !== undefined) node.textContent = value;
-  if (className) node.className = className;
-  return node;
-}
-
-function button(label, action, className) {
-  const node = el("button", label, className);
-  node.type = "button";
-  node.addEventListener("click", action);
-  return node;
-}
-
-function helpButton(title, ...paragraphs) {
-  return tooltipButton("?", "help-button", title, ...paragraphs);
-}
-
-function tooltipButton(label, className, title, ...paragraphs) {
-  const trigger = button(label, () => {
-    if (helpPopover.matches(":popover-open")) {
-      helpPopover.hidePopover();
-      if (helpTrigger === trigger) return;
-      helpTrigger?.setAttribute("aria-expanded", "false");
-    }
-    helpTrigger = trigger;
-    trigger.setAttribute("aria-expanded", "true");
-    get("helpTitle").textContent = title;
-    get("helpBody").replaceChildren(...paragraphs.filter(Boolean).map(text => el("p", text)));
-    helpPopover.showPopover({source: trigger});
-    positionHelp();
-  }, className);
-  trigger.setAttribute("aria-label", `Справка · ${title}`);
-  trigger.setAttribute("aria-controls", helpPopover.id);
-  trigger.setAttribute("aria-expanded", "false");
-  return trigger;
-}
-
-function positionHelp() {
-  if (!helpPopover.matches(":popover-open")) return;
-  const anchor = helpTrigger.getBoundingClientRect();
-  if (!helpTrigger.isConnected || anchor.bottom < 0 || anchor.top > window.innerHeight) {
-    helpPopover.hidePopover();
-    return;
-  }
-  const content = helpPopover.firstElementChild;
-  content.style.removeProperty("max-height");
-  const {width, height} = helpPopover.getBoundingClientRect();
-  const left = Math.max(8, Math.min(anchor.left, document.documentElement.clientWidth - width - 8));
-  const below = anchor.bottom + 8;
-  const roomBelow = window.innerHeight - below - 8;
-  const roomAbove = anchor.top - 16;
-  const above = height > roomBelow && roomAbove > roomBelow;
-  const available = above ? roomAbove : roomBelow;
-  content.style.maxHeight = `${available}px`;
-  const top = above ? anchor.top - Math.min(height, available) - 8 : below;
-  helpPopover.dataset.side = above ? "above" : "below";
-  helpPopover.style.setProperty("--tip-x", `${anchor.left + anchor.width / 2 - left}px`);
-  helpPopover.style.left = `${left}px`;
-  helpPopover.style.top = `${top}px`;
-}
-
-helpPopover.addEventListener("toggle", () => {
-  if (!helpPopover.matches(":popover-open")) {
-    helpTrigger?.setAttribute("aria-expanded", "false");
-    helpTrigger = null;
-  }
-});
-document.addEventListener("scroll", positionHelp, true);
-
-function rowCount(count) {
-  return `${formatNumber.format(count)} ${rowForms[plural.select(count)]}`;
-}
-
-function visValue(value) {
-  if (value === null || value === "") return "—";
-  if (typeof value === "number") return Number.isInteger(value) ? String(value) : formatNumber.format(value);
-  const match = datePattern.exec(value);
-  if (match) return `${match[3]}.${match[2]}.${match[1]}${match[4] ? " " + match[4].slice(1) : ""}`;
-  return String(value);
-}
 
 async function api(path, query) {
   const url = query ? `${path}?${new URLSearchParams(query)}` : path;
@@ -405,12 +314,6 @@ function stageStatus(stage) {
   return stage.rows.length ? `${labels[stage.tone]} · ${rowCount(stage.rows.length)}` : "0 строк";
 }
 
-function badge(tone) {
-  const status = el("span", tone === "ambiguous" ? "Неоднозначность" : labels[tone], "record-status");
-  status.dataset.tone = tone;
-  return status;
-}
-
 function showStage(file, link = routeLinks.find(link => link.to === file) ?? routeLinks.find(link => link.from === file)) {
   app.stage = file;
   app.connection = link;
@@ -437,7 +340,7 @@ function showStage(file, link = routeLinks.find(link => link.to === file) ?? rou
       sectionWithTable(norms, "Нормы прессовки"));
     panel.append(reference);
   }
-  panel.append(stageBody(stage, title, link));
+  panel.append(renderTable(stage, title, link));
   positionHelp();
   get("status").textContent = `${title}. ${stageStatus(stage)}.`;
 }
@@ -542,145 +445,14 @@ function stageHeading(stage, title, note) {
 
 function sectionWithTable(stage, title, note) {
   const node = el("section", undefined, "data-section");
-  node.append(stageHeading(stage, title, note), stageBody(stage, title));
+  node.append(stageHeading(stage, title, note), renderTable(stage, title));
   return node;
 }
 
-function commonBasis(stage) {
-  const first = stage.rows[0];
-  if (first && stage.rows.every(row => row.basis === first.basis && row.tone === first.tone)) return first.basis;
-}
-
-function sortKey(value) {
-  if (value == null) return null;
-  if (typeof value === "number") return {kind: 0, value};
-  const text = String(value).trim();
-  if (!text) return null;
-  if (datePattern.test(text)) return {kind: 1, value: text};
-  if (/^[+-]?\d+(?:[.,]\d+)?$/.test(text)) return {kind: 0, value: Number(text.replace(",", "."))};
-  return {kind: 2, value: text};
-}
-
-function sortRows(rows, getValue, direction) {
-  const factor = direction === "ascending" ? 1 : -1;
-  return rows.map(row => ({row, key: sortKey(getValue(row))}))
-    .sort(({key: a}, {key: b}) => {
-      if (!a || !b) return Number(!a) - Number(!b);
-      if (a.kind !== b.kind) return factor * (a.kind - b.kind);
-      return factor * (a.kind === 0 ? a.value - b.value : sortText.compare(a.value, b.value));
-    })
-    .map(({row}) => row);
-}
-
-function addSortHeaders(table, columns, onSort) {
-  const headers = table.createTHead().insertRow();
-  let active;
-  for (const {label, value, numeric, hint, marker} of columns) {
-    const heading = el("th", undefined, numeric ? "measure" : undefined);
-    heading.scope = "col";
-    const control = button(label || "Без названия", () => {
-      const next = heading.getAttribute("aria-sort") === "ascending" ? "descending" : "ascending";
-      active?.removeAttribute("aria-sort");
-      heading.setAttribute("aria-sort", next);
-      active = heading;
-      onSort(value, next);
-    }, "sort-button");
-    const arrow = el("span", undefined, "sort-arrow");
-    arrow.setAttribute("aria-hidden", "true");
-    control.append(arrow);
-    if (hint) control.title = hint;
-    if (marker) {
-      const contents = el("div", undefined, "marked-header");
-      contents.append(control, marker);
-      heading.append(contents);
-    } else {
-      heading.append(control);
-    }
-    headers.append(heading);
-  }
-}
-
-function stageBody(stage, title, link) {
-  const panel = el("section", undefined, "stage-body");
-  if (!stage.rows.length) {
-    panel.append(el("p", "По выбранным фильтрам строк нет.", "muted"));
-    return panel;
-  }
-  const sharedBasis = commonBasis(stage);
-  const showRowTone = !link || (!stage.outside_period && stage.rows.some(row => row.tone !== stage.tone));
-  const markIndex = stage.columns.findIndex(label => /^Доп\.? марка$/i.test(label));
-
-  const container = el("div", undefined, "table-wrap");
-  container.tabIndex = 0;
-  container.setAttribute("role", "region");
-  container.setAttribute("aria-label", `${title}, таблица исходных записей`);
-  const table = el("table", undefined, "records");
-  const numeric = stage.columns.map(label => /%|\s(?:шт|тн)\.?$|^Часы /u.test(label));
-  const columns = [
-    {label: "Строка XLS", value: row => row.row},
-    ...stage.columns.map((label, index) => ({
-      label, value: row => row.values[index], numeric: numeric[index], marker: columnMarker(stage, index, link),
-    })),
-  ];
-  if (!sharedBasis) {
-    columns.push(showRowTone
-      ? {label: "Сопоставление", value: row => labels[stage.outside_period ? "outside" : row.tone]}
-      : {label: "Подбор", value: row => row.basis, hint: "Сортировать по пояснению подбора"});
-  }
-  const body = table.createTBody();
-  container.append(table);
-  panel.append(container);
-
-  let orderedRows = stage.rows;
-  let shown = 0;
-  const more = button("Показать ещё строки", () => appendRows(true), "quiet show-more");
-  addSortHeaders(table, columns, (getValue, direction) => {
-    orderedRows = sortRows(stage.rows, getValue, direction);
-    const visibleCount = shown;
-    body.replaceChildren();
-    shown = 0;
-    appendRows(false, visibleCount);
-    positionHelp();
+function renderTable(stage, title, link) {
+  return stageBody(stage, title, {
+    orderMonth: app.month, sourceLink, markColumn: index => columnMarker(stage, index, link), routeStage: Boolean(link),
   });
-  function appendRows(focus = false, count = 25) {
-    const batch = orderedRows.slice(shown, shown + count);
-    let firstLink;
-    for (const row of batch) {
-      const tr = body.insertRow();
-      const link = sourceLink({file: stage.file, month: row.month, row: row.row}, String(row.row));
-      link.setAttribute("aria-label", `Строка ${row.row} · ${row.sheet}`);
-      firstLink ||= link;
-      const source = tr.insertCell();
-      source.append(link);
-      if (row.month !== app.month) source.append(el("small", row.sheet));
-      for (const [index, value] of row.values.entries()) {
-        const cell = tr.insertCell();
-        if (index === markIndex) cell.className = "recipe-mark";
-        if (numeric[index]) cell.className = "measure";
-        if (datePattern.test(value)) {
-          const time = el("time", visValue(value));
-          time.dateTime = value;
-          cell.append(time);
-        } else {
-          cell.textContent = visValue(value);
-        }
-      }
-      if (!sharedBasis) {
-        const cell = tr.insertCell();
-        cell.className = "basis";
-        const tone = stage.outside_period ? "outside" : row.tone;
-        if (showRowTone) cell.append(badge(tone));
-        cell.append(helpButton(`Строка ${row.row} · ${labels[tone]}`, row.basis));
-      }
-    }
-    shown += batch.length;
-    more.hidden = shown === stage.rows.length;
-    more.textContent = `Показать ещё · ${shown} из ${stage.rows.length}`;
-    if (focus) firstLink?.focus();
-  }
-  appendRows();
-  panel.append(more);
-  return panel;
 }
 
 async function openSource(ref, trigger) {
@@ -776,99 +548,6 @@ get("orderModeLabel").append(helpButton("Отбор заказов",
   "Записи подачи подбираются по компоненту и дате. Для подтверждения переходов нужна связь между партиями."));
 get("openOrder").addEventListener("click", event =>
   openSource({file: 1, month: app.month, row: app.order.row}, event.currentTarget));
-function initOrdersPane() {
-  const workspace = get("workspace");
-  const pane = get("ordersPane");
-  const resizer = get("ordersResizer");
-  const toggle = get("toggleOrders");
-  const picker = get("orderPicker");
-  const list = get("orders");
-  const storageKey = "trace-viewer.orders-width";
-  const minWidth = 200;
-  let preferredWidth;
-  let drag;
-  let orderScroll = 0;
-
-  try {
-    const savedWidth = Number(localStorage.getItem(storageKey));
-    if (Number.isFinite(savedWidth) && savedWidth >= minWidth) preferredWidth = savedWidth;
-  } catch {
-    // Resizing is available even when the browser blocks storage.
-  }
-
-  function maxWidth() {
-    return Math.max(minWidth, Math.min(520, Math.floor(workspace.clientWidth * 0.4)));
-  }
-
-  function limitWidth(value) {
-    return Math.max(minWidth, Math.min(maxWidth(), Math.round(value)));
-  }
-
-  function updateWidth() {
-    const defaultWidth = window.innerWidth <= 1240 ? 224 : 252;
-    const width = limitWidth(preferredWidth ?? defaultWidth);
-    workspace.style.setProperty("--orders-width", `${width}px`);
-    resizer.setAttribute("aria-valuemax", maxWidth());
-    resizer.setAttribute("aria-valuenow", width);
-    resizer.setAttribute("aria-valuetext", `${width} пикс.`);
-    positionHelp();
-  }
-
-  function rememberWidth() {
-    if (preferredWidth === undefined) return;
-    try {
-      localStorage.setItem(storageKey, String(preferredWidth));
-    } catch {
-      // The current width is still kept for this page.
-    }
-  }
-
-  resizer.setAttribute("aria-valuemin", minWidth);
-  resizer.addEventListener("pointerdown", event => {
-    if (!event.isPrimary || event.button !== 0) return;
-    event.preventDefault();
-    resizer.focus({preventScroll: true});
-    drag = {id: event.pointerId, x: event.clientX, width: pane.getBoundingClientRect().width};
-    resizer.setPointerCapture(drag.id);
-    workspace.dataset.ordersResizing = "";
-  });
-  resizer.addEventListener("pointermove", event => {
-    if (event.pointerId !== drag?.id) return;
-    preferredWidth = limitWidth(drag.width + event.clientX - drag.x);
-    updateWidth();
-  });
-  resizer.addEventListener("lostpointercapture", event => {
-    if (event.pointerId !== drag?.id) return;
-    drag = undefined;
-    delete workspace.dataset.ordersResizing;
-    rememberWidth();
-  });
-  resizer.addEventListener("keydown", event => {
-    const width = Number(resizer.getAttribute("aria-valuenow"));
-    const sizes = {ArrowLeft: width - 16, ArrowRight: width + 16, Home: minWidth, End: maxWidth()};
-    const size = sizes[event.key];
-    if (size === undefined) return;
-    event.preventDefault();
-    preferredWidth = limitWidth(size);
-    updateWidth();
-    rememberWidth();
-  });
-  toggle.addEventListener("click", () => {
-    const collapsed = !picker.hidden;
-    if (collapsed) orderScroll = list.scrollTop;
-    if (drag && resizer.hasPointerCapture(drag.id)) resizer.releasePointerCapture(drag.id);
-    picker.hidden = resizer.hidden = collapsed;
-    workspace.toggleAttribute("data-orders-collapsed", collapsed);
-    toggle.setAttribute("aria-expanded", String(!collapsed));
-    toggle.title = collapsed ? "Раскрыть панель заказов" : "Свернуть панель заказов";
-    toggle.setAttribute("aria-label", toggle.title);
-    if (!collapsed) list.scrollTop = orderScroll;
-    positionHelp();
-  });
-
-  window.addEventListener("resize", updateWidth);
-  updateWidth();
-}
 
 async function init() {
   try {
