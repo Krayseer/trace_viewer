@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Маршрут заказа</title>
+  <link rel="stylesheet" href="/viewer.css">
+  <script defer src="/viewer.js"></script>
+</head>
+<body>
+  <div id="workspace" class="workspace">
+    <aside id="ordersPane" class="orders-pane" aria-labelledby="pickerTitle">
+      <div class="orders-top">
+        <h2 id="pickerTitle">Заказы</h2>
+        <button type="button" id="toggleOrders" class="sidebar-toggle" aria-controls="orderPicker"
+          aria-expanded="true" aria-label="Свернуть панель заказов" title="Свернуть панель заказов"></button>
+      </div>
+      <div id="orderPicker" class="orders-body">
+        <div class="orders-header">
+          <form id="searchForm" class="search-form" role="search">
+            <div>
+              <label for="month">Месячный лист</label>
+              <div class="select-field"><select id="month"></select></div>
+            </div>
+            <div>
+              <label for="orderSearch">Поиск заказа</label>
+              <div class="search-field"><input id="orderSearch" type="search" placeholder="Номер, марка, код" autocomplete="off"></div>
+            </div>
+            <div class="order-mode-field">
+              <div id="orderModeLabel" class="field-label"><label for="orderMode">Отбор заказов</label></div>
+              <div class="select-field">
+                <select id="orderMode">
+                  <option value="all">Все заказы</option>
+                  <option value="best">Лучшие маршруты</option>
+                  <option value="clean">Без расхождений</option>
+                </select>
+              </div>
+            </div>
+          </form>
+          <p id="orderCount" role="status" class="muted"></p>
+        </div>
+        <ul id="orders" class="order-list" role="list" aria-label="Строки заказов"></ul>
+      </div>
+      <div id="ordersResizer" class="orders-resizer" tabindex="0" role="separator"
+        aria-orientation="vertical" aria-controls="ordersPane" aria-label="Ширина панели заказов"
+        title="Изменить ширину панели заказов"></div>
+    </aside>
+
+    <main id="main" aria-busy="true">
+      <header class="order">
+        <div class="order-heading">
+          <div class="order-identity">
+            <p id="orderNumber" class="order-number" hidden></p>
+            <h1 id="orderTitle">Загрузка заказов…</h1>
+          </div>
+          <button type="button" id="openOrder" class="quiet" aria-label="Строка XLS выбранного заказа" hidden>Строка XLS</button>
+        </div>
+        <dl id="orderFacts" class="order-facts" hidden>
+          <div><dt>Код изделия</dt><dd id="orderProduct"></dd></div>
+          <div><dt>Код марки сырца</dt><dd id="orderRaw"></dd></div>
+          <div><dt>Код марки массы</dt><dd id="orderMass"></dd></div>
+          <div class="order-mark"><dt>Доп. марка</dt><dd id="orderMark"></dd></div>
+          <div><dt>Объём заказа</dt><dd id="orderBase"></dd></div>
+          <div id="orderExtraField" hidden><dt>Доп. объём</dt><dd id="orderExtra"></dd></div>
+        </dl>
+        <p id="orderSheet" class="muted caption" hidden></p>
+      </header>
+
+      <form id="filters" aria-label="Фильтры выбранного заказа" hidden>
+        <div class="filter-field recipe-field">
+          <div class="field-label" id="recipeLabel"><label for="recipe">Версия шихты</label></div>
+          <div class="select-field"><select id="recipe" disabled></select></div>
+        </div>
+        <div class="filter-field">
+          <label for="shift">Смена</label>
+          <div class="select-field"><select id="shift"><option value="">Все</option><option>1</option><option>2</option></select></div>
+        </div>
+        <button type="submit" id="applyFilters" class="primary">Применить</button>
+      </form>
+
+      <p id="error" role="alert" hidden></p>
+      <p id="status" class="sr-only" role="status"></p>
+
+      <div id="content" hidden>
+        <div id="views" role="tablist" aria-label="Разделы заказа">
+          <button type="button" role="tab" id="tab-route" aria-controls="view-route" aria-selected="true">Маршрут</button>
+          <button type="button" role="tab" id="tab-catalog" aria-controls="view-catalog" aria-selected="false" tabindex="-1">Шихта</button>
+          <button type="button" role="tab" id="tab-context" aria-controls="view-context" aria-selected="false" tabindex="-1">Проценты и простои</button>
+        </div>
+
+        <section id="view-route" role="tabpanel" aria-labelledby="tab-route" tabindex="0">
+          <nav aria-label="Технологический маршрут">
+            <ol id="route" role="list"></ol>
+          </nav>
+          <div id="operation" role="region" aria-labelledby="operationTitle"></div>
+        </section>
+        <section id="view-catalog" role="tabpanel" aria-labelledby="tab-catalog" tabindex="0" hidden></section>
+        <section id="view-context" role="tabpanel" aria-labelledby="tab-context" tabindex="0" hidden></section>
+      </div>
+    </main>
+  </div>
+
+  <div id="fieldHelp" class="help-popover" popover="auto" role="region" aria-labelledby="helpTitle">
+    <div class="help-content">
+      <h4 id="helpTitle"></h4>
+      <div id="helpBody"></div>
+    </div>
+  </div>
+
+  <dialog id="sourceDialog" aria-labelledby="sourceTitle">
+    <div class="dialog-heading">
+      <h2 id="sourceTitle">Исходная строка</h2>
+      <button type="submit" form="closeSource" class="close-icon" aria-label="Закрыть окно" title="Закрыть окно">×</button>
+    </div>
+    <div id="sourceBody" aria-live="polite"></div>
+    <form id="closeSource" class="dialog-actions" method="dialog">
+      <button type="submit" class="quiet" autofocus>Закрыть</button>
+    </form>
+  </dialog>
+</body>
+</html>
