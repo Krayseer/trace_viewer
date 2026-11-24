@@ -12,7 +12,7 @@ from .application import TraceApplication, month_window
 from .presentation import StageSources, coverage_payload, order_payload, source_payload, trace_payload
 
 
-HERE = Path(__file__).resolve().parent
+WEB_ROOT = Path(__file__).resolve().parents[1] / "web"
 ASSETS = {
     "/": ("index.html", "text/html"),
     "/viewer.css": ("viewer.css", "text/css"),
@@ -50,7 +50,7 @@ class Handler(BaseHTTPRequestHandler):
         url = urlsplit(self.path)
         if url.path in ASSETS:
             filename, mime = ASSETS[url.path]
-            self.send_body(200, (HERE / filename).read_bytes(), mime)
+            self.send_body(200, (WEB_ROOT / filename).read_bytes(), mime)
             return
         queries = {key: vals[0] for key, vals in parse_qs(url.query).items()}
         app = self.server.application

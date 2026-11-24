@@ -11,12 +11,12 @@ from .data import XlsDataset
 from .http_api import Handler, TraceServer
 
 
-HERE = Path(__file__).resolve().parent
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--data", type=Path, default=HERE.parents[1] / "Данные")
+    parser.add_argument("--data", type=Path, default=PROJECT_ROOT / "Данные")
     parser.add_argument("--port", type=int, default=8766)
     parser.add_argument("--open", action="store_true", help="Open the viewer in the default browser")
     args = parser.parse_args()
