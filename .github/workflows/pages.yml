@@ -22,10 +22,13 @@ jobs:
         with:
           python-version: '3.12'
       - uses: actions/configure-pages@v6
-      - name: Build the static demo
+      - name: Build the viewer
         run: |
-          python -m pip install -r requirements-pages.txt
-          python -m server.export_pages --output _site
+          runtime="$RUNNER_TEMP/trace-runtime"
+          npm install --prefix "$runtime" --no-audit --no-fund --ignore-scripts pyodide@314.0.8
+          python -m pip download --only-binary=:all: --no-deps --requirement requirements-pages.txt --dest "$runtime"
+          python -m server.export_pages --output _site \
+            --pyodide "$runtime/node_modules/pyodide" --xlrd "$runtime"/xlrd-*.whl
           printf '%s\n' "$GITHUB_SHA" > _site/revision.txt
       - name: Upload the site
         uses: actions/upload-pages-artifact@v5
@@ -54,7 +57,7 @@ jobs:
             if revision=$(curl --silent --fail --max-time 10 "$site/revision.txt?v=$GITHUB_SHA") &&
               [[ "$revision" == "$GITHUB_SHA" ]]; then
               curl --silent --show-error --fail --max-time 10 "$site/?v=$GITHUB_SHA" > /dev/null
-              curl --silent --show-error --fail --max-time 10 "$site/data/months.json?v=$GITHUB_SHA" > /dev/null
+              curl --silent --show-error --fail --head --max-time 10 "$site/workbooks.zip.enc?v=$GITHUB_SHA" > /dev/null
               exit 0
             fi
             sleep 5

@@ -54,29 +54,11 @@ const app = {
   stages: new Map(), transitions: new Map(), stage: null, connection: null,
 };
 const sourceDialog = get("sourceDialog");
-const staticDemo = document.documentElement.dataset.source === "static";
 let sourceTrigger = null;
-
-async function staticApi(path, {month, row, recipe = "auto", shift = "all", file} = {}) {
-  const pagesData = "./data";
-  const urls = {
-    "/api/months": `${pagesData}/months.json`,
-    "/api/orders": `${pagesData}/${month}/orders.json`,
-    "/api/order-coverage": `${pagesData}/${month}/coverage.json`,
-    "/api/trace": `${pagesData}/${month}/traces/${row}.json`,
-    "/api/source": `${pagesData}/sources/${file}/${month}/${row}.json`,
-  };
-  const response = await fetch(urls[path]);
-  if (!response.ok) throw new Error("Данные недоступны.");
-  const payload = await response.json();
-  if (path !== "/api/trace") return payload;
-  const trace = payload[shift]?.[recipe];
-  if (!trace) throw new Error("Для выбранной смены и версии шихты маршрут недоступен.");
-  return trace;
-}
+let workbookApi;
 
 async function api(path, query) {
-  if (staticDemo) return staticApi(path, query);
+  if (workbookApi) return workbookApi(path, query);
   const url = query ? `${path}?${new URLSearchParams(query)}` : path;
   const reply = await fetch(url);
   const payload = await reply.json();
@@ -568,7 +550,6 @@ get("openOrder").addEventListener("click", event =>
   openSource({file: 1, month: app.month, row: app.order.row}, event.currentTarget));
 
 async function init() {
-  get("demoNotice").hidden = !staticDemo;
   try {
     app.months = await api("/api/months");
     get("month").append(...app.months.map(m => new Option(m.label, m.id)));
@@ -588,5 +569,39 @@ async function init() {
   }
 }
 
+function initWorkbookAccess() {
+  const form = get("unlockBooks");
+  const key = get("workbookKey");
+  const submit = get("unlockButton");
+  const search = [...get("searchForm").elements];
+  form.hidden = false;
+  for (const control of search) control.disabled = true;
+  get("orderTitle").textContent = "Маршрут заказа";
+  get("main").setAttribute("aria-busy", "false");
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+    const value = key.value.trim();
+    key.disabled = submit.disabled = true;
+    submit.textContent = "Открываю XLS…";
+    report();
+    try {
+      const {openWorkbookApi} = await import("./viewer_workbooks.js");
+      workbookApi = await openWorkbookApi(value);
+    } catch (error) {
+      report(error.message);
+      key.disabled = submit.disabled = false;
+      submit.textContent = "Открыть";
+      key.select();
+      return;
+    }
+    key.value = "";
+    form.hidden = true;
+    for (const control of search) control.disabled = false;
+    await init();
+  });
+}
+
 initOrdersPane();
-init();
+if (document.documentElement.dataset.source === "workbooks") initWorkbookAccess();
+else init();

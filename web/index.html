@@ -48,7 +48,6 @@
 
     <main id="main" aria-busy="true">
       <header class="order">
-        <p id="demoNotice" class="muted caption" hidden>Демонстрационные данные</p>
         <div class="order-heading">
           <h1 id="orderTitle">Загрузка заказов…</h1>
           <button type="button" id="openOrder" class="quiet" hidden>Строка XLS</button>
@@ -63,6 +62,14 @@
         </dl>
         <p id="orderSheet" class="muted caption" hidden></p>
       </header>
+
+      <form id="unlockBooks" class="unlock-books" hidden>
+        <label for="workbookKey">Ключ доступа к выгрузкам</label>
+        <div class="unlock-controls">
+          <input id="workbookKey" type="password" autocomplete="off" spellcheck="false" required>
+          <button id="unlockButton" class="primary" type="submit">Открыть</button>
+        </div>
+      </form>
 
       <form id="filters" aria-label="Фильтры выбранного заказа" hidden>
         <div class="filter-field recipe-field">

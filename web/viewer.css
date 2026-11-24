@@ -259,6 +259,9 @@ main { min-width: 0; padding: var(--s16) var(--s20) var(--s24); container-type: 
   gap: var(--s4) var(--s10);
 }
 .order { margin-bottom: var(--s10); }
+.unlock-books { margin-bottom: var(--s16); }
+.unlock-controls { display: flex; align-items: center; gap: var(--s8); max-width: 460px; }
+.unlock-controls button { flex-shrink: 0; }
 .order-heading h1 {
   min-width: 0;
   font-weight: 500;

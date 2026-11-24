@@ -73,6 +73,12 @@ def normalize_cell(value: Cell) -> Cell:
     return value
 
 
+def workbook_paths(directory: Path) -> Iterable[tuple[Book, Path]]:
+    for file, title in zip(Book, TITLES):
+        path = directory / f"{int(file)}. {title}.xls"
+        yield file, path if path.is_file() else directory / f"{title}.xls"
+
+
 @dataclass(frozen=True, slots=True)
 class SourceRow:
     ref: SourceRef
@@ -149,10 +155,7 @@ class XlsDataset:
         self._sheets: dict[tuple[int, str], Sheet] = {}
         self._sheets_by_name: dict[tuple[int, str], Sheet] = {}
         self._by_day: dict[type[DatedRecord], list[DatedRecord]] = defaultdict(list)
-        for file, title in zip(Book, TITLES):
-            path = directory / f"{int(file)}. {title}.xls"
-            if not path.is_file():
-                path = directory / f"{title}.xls"
+        for file, path in workbook_paths(directory):
             self._read_book(file, path)
 
         self.months = sorted(month for file, month in self._sheets if file == Book.ORDERS)
