@@ -1,0 +1,63 @@
+name: Deploy GitHub Pages
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - uses: actions/configure-pages@v5
+      - name: Build the static demo
+        run: |
+          python -m pip install -r requirements-pages.txt
+          python -m server.export_pages --output _site
+          printf '%s\n' "$GITHUB_SHA" > _site/revision.txt
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publish the site
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Verify the published revision and data
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          site="${PAGE_URL%/}"
+          for attempt in {1..12}; do
+            if revision=$(curl --silent --fail --max-time 10 "$site/revision.txt?v=$GITHUB_SHA") &&
+              [[ "$revision" == "$GITHUB_SHA" ]]; then
+              curl --silent --show-error --fail --max-time 10 "$site/?v=$GITHUB_SHA" > /dev/null
+              curl --silent --show-error --fail --max-time 10 "$site/data/months.json?v=$GITHUB_SHA" > /dev/null
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "Published revision $GITHUB_SHA is unavailable" >&2
+          exit 1

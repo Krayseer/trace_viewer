@@ -1,11 +1,11 @@
 <!doctype html>
-<html lang="ru">
+<html lang="ru" data-source="api">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Маршрут заказа</title>
-  <link rel="stylesheet" href="/viewer.css">
-  <script type="module" src="/viewer.js"></script>
+  <link rel="stylesheet" href="./viewer.css">
+  <script type="module" src="./viewer.js"></script>
 </head>
 <body>
   <div id="workspace" class="workspace">
@@ -48,6 +48,7 @@
 
     <main id="main" aria-busy="true">
       <header class="order">
+        <p id="demoNotice" class="muted caption" hidden>Демонстрационные данные</p>
         <div class="order-heading">
           <h1 id="orderTitle">Загрузка заказов…</h1>
           <button type="button" id="openOrder" class="quiet" hidden>Строка XLS</button>
