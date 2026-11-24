@@ -332,7 +332,9 @@ function showStage(file, link = routeLinks.find(link => link.to === file) ?? rou
   operationTitle.tabIndex = -1;
   const panel = get("operation");
   panel.replaceChildren(heading);
-  panel.append(transitionDetails(link, file));
+  if (file !== 3 || connectionStatus(link).tone !== "candidate") {
+    panel.append(transitionDetails(link, file));
+  }
   if (file === 6) {
     const norms = app.stages.get(5);
     const reference = el("details", undefined, "reference");
