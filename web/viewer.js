@@ -4,6 +4,7 @@ import {
 import {addSortHeaders, commonBasis, sortRows, stageBody} from "./viewer_table.js";
 import {initOrdersPane} from "./viewer_orders_panel.js";
 import {initPlanning} from "./viewer_planning.js";
+import {initComparison} from "./viewer_comparison.js";
 const route = [
   [3, "Подача порошков"], [4, "Дозирование"], [6, "Прессовка"], [7, "Садка"],
   [8, "Печи"], [9, "Дополнительные операции"], [10, "Сдача"],
@@ -498,11 +499,15 @@ sourceDialog.addEventListener("close", () => {
 const setView = initTabs(get("views"));
 const usesWorkbooks = document.documentElement.dataset.source === "workbooks";
 const planning = initPlanning({usesWorkbooks});
+const comparison = initComparison({usesWorkbooks});
 const setWorkspace = initTabs(get("workspaceViews"), id => {
   const url = new URL(location.href);
   if (id === "tab-planning") {
     url.searchParams.set("view", "planning");
     planning.open();
+  } else if (id === "tab-comparison") {
+    url.searchParams.set("view", "comparison");
+    comparison.open();
   } else {
     url.searchParams.delete("view");
   }
@@ -625,6 +630,8 @@ function initWorkbookAccess() {
 }
 
 initOrdersPane();
-if (new URLSearchParams(location.search).get("view") === "planning") setWorkspace("tab-planning");
+const initialWorkspace = new URLSearchParams(location.search).get("view");
+if (initialWorkspace === "planning") setWorkspace("tab-planning");
+if (initialWorkspace === "comparison") setWorkspace("tab-comparison");
 if (usesWorkbooks) initWorkbookAccess();
 else init();

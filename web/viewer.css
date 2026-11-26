@@ -328,7 +328,11 @@ main { min-width: 0; padding: var(--s16) var(--s20) var(--s24); container-type: 
   height: var(--workspace-nav);
   padding: var(--s8) var(--s16) 0;
   background: var(--surface);
+  overflow-x: auto;
+  scrollbar-width: none;
 }
+.workspace-tabs > button { flex: 0 0 auto; }
+.comparison-tab-short { display: none; }
 [role="tab"] {
   height: var(--control);
   margin-bottom: -1px;
@@ -653,6 +657,87 @@ tbody tr:hover > * { background: var(--selection); }
 .planning-status[data-tone="error"] { color: var(--danger-text); border-left: 3px solid var(--danger-rule); }
 #planningResources table { min-width: 470px; }
 .planning-utilization { width: 112px; }
+
+.comparison {
+  display: grid;
+  gap: var(--s16);
+  max-width: 1440px;
+  margin-inline: auto;
+}
+.comparison-heading { padding-block: var(--s10) var(--s4); }
+.comparison-heading h1 { font-size: clamp(24px, 4vw, 34px); line-height: 1.2; font-weight: 500; }
+.comparison-heading p, .comparison-note { margin-top: var(--s8); color: var(--muted); }
+.comparison-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--s10) var(--s16);
+}
+.comparison-controls label { display: grid; gap: var(--s4); max-width: 100%; }
+.comparison-controls select { width: min(330px, 100%); }
+#comparisonRepeat, #comparisonBudget { width: 110px; }
+#comparisonFile { height: auto; min-height: var(--control); padding-block: var(--s4); }
+.comparison-result { display: grid; gap: var(--s10); min-width: 0; }
+#comparisonContext { margin-top: var(--s4); overflow-wrap: anywhere; }
+.comparison .table-wrap { max-height: min(470px, 60dvh); overflow: auto; }
+#comparisonMetrics table { min-width: 860px; }
+.comparison th { text-align: left; }
+.comparison tbody th { font-weight: 500; }
+.comparison thead th { position: sticky; top: 0; z-index: 1; background: var(--canvas); }
+.comparison .table-wrap :is(td, th) { font-variant-numeric: tabular-nums; }
+.comparison-method { min-width: 166px; }
+.comparison :is(small, .comparison-note) { font-size: 13px; line-height: 1.35; }
+.comparison-method small, .comparison-time small { display: block; margin-top: var(--s4); color: var(--muted); }
+.comparison-time { min-width: 84px; }
+.comparison-time small { color: var(--warning-text); }
+.comparison-track { display: block; margin-top: var(--s4); height: 4px; border-radius: 4px; background: var(--selection); }
+.comparison-track span { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
+.comparison-summary { padding: var(--s10) var(--s16); border-left: 3px solid var(--accent); background: var(--selection); }
+.comparison-detail {
+  padding: var(--s10) var(--s16);
+  margin-top: var(--s8);
+  border: 1px solid var(--line);
+  border-radius: var(--control-radius);
+  background: var(--surface);
+}
+.comparison-detail summary { width: fit-content; cursor: pointer; }
+.comparison-detail h3 { margin-block: var(--s16) var(--s4); }
+.comparison-detail td { overflow-wrap: anywhere; }
+
+@media (max-width: 600px) {
+  .workspace-tabs { gap: 0 var(--s8); padding-inline: var(--s8); }
+  .workspace-tabs > button { font-size: 13px; }
+  .comparison-tab-label { display: none; }
+  .comparison-tab-short { display: inline; }
+  .comparison { padding-inline: var(--s10); }
+  #comparisonMetrics { max-height: none; overflow: visible; }
+  #comparisonMetrics table, #comparisonMetrics tbody { display: block; min-width: 0; }
+  #comparisonMetrics thead {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  #comparisonMetrics tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: var(--s4);
+    margin-bottom: var(--s8);
+    border: 1px solid var(--line);
+    border-radius: var(--surface-radius);
+    background: var(--surface);
+  }
+  #comparisonMetrics :is(th, td) { height: auto; border: 0; overflow-wrap: anywhere; }
+  #comparisonMetrics tbody th { grid-column: 1 / -1; border-bottom: 1px solid var(--line); }
+  #comparisonMetrics td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: var(--s4);
+    color: var(--muted);
+    font-size: 12px;
+  }
+}
 .planning-track {
   display: block;
   height: 4px;

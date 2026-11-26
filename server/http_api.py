@@ -10,7 +10,7 @@ from urllib.parse import parse_qs, urlsplit
 
 from .api import api_response
 from .application import TraceApplication
-from .planning_api import MAX_REQUEST_BYTES, PlanningExamples, solve_request
+from .planning_api import MAX_REQUEST_BYTES, PlanningExamples, compare_request, solve_request
 from .presentation import StageSources
 
 
@@ -24,14 +24,16 @@ ASSETS = {
     "/viewer_table.js": ("viewer_table.js", "text/javascript"),
     "/viewer_orders_panel.js": ("viewer_orders_panel.js", "text/javascript"),
     "/viewer_planning.js": ("viewer_planning.js", "text/javascript"),
+    "/viewer_comparison.js": ("viewer_comparison.js", "text/javascript"),
+    "/comparison_runs.json": ("comparison_runs.json", "application/json"),
     "/fonts/roboto-cyrillic-wght-normal.woff2": ("fonts/roboto-cyrillic-wght-normal.woff2", "font/woff2"),
     "/fonts/roboto-latin-wght-normal.woff2": ("fonts/roboto-latin-wght-normal.woff2", "font/woff2"),
 }
 
 
 class TraceServer(ThreadingHTTPServer):
-    application: TraceApplication
-    sources: StageSources
+    application: TraceApplication | None
+    sources: StageSources | None
     planning_examples: PlanningExamples
 
 
@@ -67,11 +69,21 @@ class Handler(BaseHTTPRequestHandler):
             else:
                 self.send_data(200, example)
             return
+        if self.server.application is None or self.server.sources is None:
+            if url.path == "/api/months":
+                self.send_data(503, {"error": "Исходные XLS не подключены. Запустите сервер с параметром --data."})
+            else:
+                self.send_data(404, {"error": "Такой страницы нет."})
+            return
         queries = {key: vals[0] for key, vals in parse_qs(url.query).items()}
         self.send_data(*api_response(self.server.application, self.server.sources, url.path, queries))
 
     def do_POST(self) -> None:
-        if urlsplit(self.path).path != "/api/planning/solve":
+        handler = {
+            "/api/planning/solve": solve_request,
+            "/api/comparison/run": compare_request,
+        }.get(urlsplit(self.path).path)
+        if handler is None:
             self.send_data(404, {"error": "Такой страницы нет."})
             return
         try:
@@ -82,7 +94,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send_data(413, {"error": "Размер запроса должен быть указан и составлять не более 100 МиБ."})
             return
         try:
-            self.send_data(*solve_request(self.rfile.read(size)))
+            self.send_data(*handler(self.rfile.read(size)))
         except ModuleNotFoundError:
             self.send_data(503, {"error": "Для расчёта в окружении сервера нужны NumPy и SciPy."})
         except Exception:

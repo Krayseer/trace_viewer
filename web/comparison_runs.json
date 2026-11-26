@@ -1,0 +1,274 @@
+{
+  "date": "2026-11-17",
+  "environment": "Apple arm64, macOS · HiGHS 1.12.0 · 1 поток",
+  "datasets": [
+    {
+      "id": "tight",
+      "kind": "synthetic",
+      "orders": 500,
+      "options": 2500,
+      "components": 8,
+      "budget": 120,
+      "input_sha256": "a6b87896aaaeec2b75d4bdfa8a0e43e6ce5dd5000d314d6e3fb857e90fb351e9",
+      "repeats": [
+        {
+          "repeat": 1,
+          "methods": [
+            {
+              "method": "fast",
+              "status": "feasible_not_proven_optimal",
+              "seconds": 2.6003198750549927,
+              "objective": 4968.8200000000015,
+              "assigned": 500,
+              "first_verified_seconds": 2.5650458751479164,
+              "first_solver_event_seconds": null,
+              "gap": null,
+              "upper_bound": null,
+              "start_accepted": null
+            },
+            {
+              "method": "cold",
+              "status": "feasible_not_proven_optimal",
+              "seconds": 116.04802891705185,
+              "objective": 5043.7500000000055,
+              "assigned": 500,
+              "first_verified_seconds": null,
+              "first_solver_event_seconds": 0.2129597500897944,
+              "gap": 0.0002081784386617461,
+              "upper_bound": 5044.8,
+              "start_accepted": null
+            },
+            {
+              "method": "warm",
+              "status": "feasible_not_proven_optimal",
+              "seconds": 116.05720791604836,
+              "objective": 5043.7500000000055,
+              "assigned": 500,
+              "first_verified_seconds": 2.5293600419536233,
+              "first_solver_event_seconds": 2.712034708005376,
+              "gap": 0.0002081784386617461,
+              "upper_bound": 5044.8,
+              "start_accepted": true
+            }
+          ]
+        },
+        {
+          "repeat": 2,
+          "methods": [
+            {
+              "method": "fast",
+              "status": "feasible_not_proven_optimal",
+              "seconds": 2.62273387494497,
+              "objective": 4968.8200000000015,
+              "assigned": 500,
+              "first_verified_seconds": 2.589846749906428,
+              "first_solver_event_seconds": null,
+              "gap": null,
+              "upper_bound": null,
+              "start_accepted": null
+            },
+            {
+              "method": "cold",
+              "status": "feasible_not_proven_optimal",
+              "seconds": 116.0471627090592,
+              "objective": 5043.7500000000055,
+              "assigned": 500,
+              "first_verified_seconds": null,
+              "first_solver_event_seconds": 0.2097232500091195,
+              "gap": 0.0002081784386617461,
+              "upper_bound": 5044.8,
+              "start_accepted": null
+            },
+            {
+              "method": "warm",
+              "status": "feasible_not_proven_optimal",
+              "seconds": 116.05254895903636,
+              "objective": 5043.7500000000055,
+              "assigned": 500,
+              "first_verified_seconds": 2.5493570839753374,
+              "first_solver_event_seconds": 2.7310345839941874,
+              "gap": 0.0002081784386617461,
+              "upper_bound": 5044.8,
+              "start_accepted": true
+            }
+          ]
+        },
+        {
+          "repeat": 3,
+          "methods": [
+            {
+              "method": "fast",
+              "status": "feasible_not_proven_optimal",
+              "seconds": 2.553448542021215,
+              "objective": 4968.8200000000015,
+              "assigned": 500,
+              "first_verified_seconds": 2.5214804998831823,
+              "first_solver_event_seconds": null,
+              "gap": null,
+              "upper_bound": null,
+              "start_accepted": null
+            },
+            {
+              "method": "cold",
+              "status": "feasible_not_proven_optimal",
+              "seconds": 116.05033616698347,
+              "objective": 5043.7500000000055,
+              "assigned": 500,
+              "first_verified_seconds": null,
+              "first_solver_event_seconds": 0.21029125002678484,
+              "gap": 0.0002081784386617461,
+              "upper_bound": 5044.8,
+              "start_accepted": null
+            },
+            {
+              "method": "warm",
+              "status": "feasible_not_proven_optimal",
+              "seconds": 116.05889162502717,
+              "objective": 5043.7500000000055,
+              "assigned": 500,
+              "first_verified_seconds": 2.543546751025133,
+              "first_solver_event_seconds": 2.7262084590038285,
+              "gap": 0.0002081784386617461,
+              "upper_bound": 5044.8,
+              "start_accepted": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "loose",
+      "kind": "synthetic",
+      "orders": 500,
+      "options": 2500,
+      "components": 8,
+      "budget": 120,
+      "input_sha256": "9e4800ad2f6ddf826a4cd2f27741bf7411a694c4ba9c9691c1072ad9fd329530",
+      "repeats": [
+        {
+          "repeat": 1,
+          "methods": [
+            {
+              "method": "fast",
+              "status": "feasible_not_proven_optimal",
+              "seconds": 1.3798832499887794,
+              "objective": 5521.740000000004,
+              "assigned": 500,
+              "first_verified_seconds": 1.3467796250479296,
+              "first_solver_event_seconds": null,
+              "gap": null,
+              "upper_bound": null,
+              "start_accepted": null
+            },
+            {
+              "method": "cold",
+              "status": "feasible_not_proven_optimal",
+              "seconds": 116.07396154094022,
+              "objective": 5698.230000000004,
+              "assigned": 500,
+              "first_verified_seconds": null,
+              "first_solver_event_seconds": 0.22283412504475564,
+              "gap": 0.00012109023328273698,
+              "upper_bound": 5698.919999999998,
+              "start_accepted": null
+            },
+            {
+              "method": "warm",
+              "status": "feasible_not_proven_optimal",
+              "seconds": 116.10777820798103,
+              "objective": 5698.230000000004,
+              "assigned": 500,
+              "first_verified_seconds": 1.33779624896124,
+              "first_solver_event_seconds": 1.5217545829946175,
+              "gap": 0.00012109023328273698,
+              "upper_bound": 5698.919999999998,
+              "start_accepted": true
+            }
+          ]
+        },
+        {
+          "repeat": 2,
+          "methods": [
+            {
+              "method": "fast",
+              "status": "feasible_not_proven_optimal",
+              "seconds": 1.367807916016318,
+              "objective": 5521.740000000004,
+              "assigned": 500,
+              "first_verified_seconds": 1.3349403330357745,
+              "first_solver_event_seconds": null,
+              "gap": null,
+              "upper_bound": null,
+              "start_accepted": null
+            },
+            {
+              "method": "cold",
+              "status": "feasible_not_proven_optimal",
+              "seconds": 116.07435312494636,
+              "objective": 5698.230000000004,
+              "assigned": 500,
+              "first_verified_seconds": null,
+              "first_solver_event_seconds": 0.23382137494627386,
+              "gap": 0.00012109023328273698,
+              "upper_bound": 5698.919999999998,
+              "start_accepted": null
+            },
+            {
+              "method": "warm",
+              "status": "feasible_not_proven_optimal",
+              "seconds": 116.08691029192414,
+              "objective": 5698.230000000004,
+              "assigned": 500,
+              "first_verified_seconds": 1.3559518759138882,
+              "first_solver_event_seconds": 1.5391629999503493,
+              "gap": 0.00012109023328273698,
+              "upper_bound": 5698.919999999998,
+              "start_accepted": true
+            }
+          ]
+        },
+        {
+          "repeat": 3,
+          "methods": [
+            {
+              "method": "fast",
+              "status": "feasible_not_proven_optimal",
+              "seconds": 1.4626890000654384,
+              "objective": 5521.740000000004,
+              "assigned": 500,
+              "first_verified_seconds": 1.4302361680893227,
+              "first_solver_event_seconds": null,
+              "gap": null,
+              "upper_bound": null,
+              "start_accepted": null
+            },
+            {
+              "method": "cold",
+              "status": "feasible_not_proven_optimal",
+              "seconds": 116.08196595904883,
+              "objective": 5698.230000000004,
+              "assigned": 500,
+              "first_verified_seconds": null,
+              "first_solver_event_seconds": 0.22248787502758205,
+              "gap": 0.00012109023328273698,
+              "upper_bound": 5698.919999999998,
+              "start_accepted": null
+            },
+            {
+              "method": "warm",
+              "status": "feasible_not_proven_optimal",
+              "seconds": 116.08277575008105,
+              "objective": 5698.230000000004,
+              "assigned": 500,
+              "first_verified_seconds": 1.3217726659495384,
+              "first_solver_event_seconds": 1.5052050420781597,
+              "gap": 0.00012109023328273698,
+              "upper_bound": 5698.919999999998,
+              "start_accepted": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

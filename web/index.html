@@ -11,6 +11,9 @@
   <div id="workspaceViews" class="view-tabs workspace-tabs" role="tablist" aria-label="Разделы приложения">
     <button type="button" role="tab" id="tab-orders" aria-controls="workspace" aria-selected="true">Маршруты заказов</button>
     <button type="button" role="tab" id="tab-planning" aria-controls="planningPanel" aria-selected="false" tabindex="-1">Планирование</button>
+    <button type="button" role="tab" id="tab-comparison" aria-label="Сравнение алгоритмов" aria-controls="comparisonPanel" aria-selected="false" tabindex="-1">
+      <span class="comparison-tab-label">Сравнение алгоритмов</span><span class="comparison-tab-short" aria-hidden="true">Алгоритмы</span>
+    </button>
   </div>
 
   <div id="workspace" class="workspace" role="tabpanel" aria-labelledby="tab-orders">
@@ -211,6 +214,66 @@
         </div>
       </main>
     </form>
+  </div>
+
+  <div id="comparisonPanel" role="tabpanel" aria-labelledby="tab-comparison" hidden>
+    <main class="comparison" aria-labelledby="comparisonTitle">
+      <div class="comparison-heading">
+        <h1 id="comparisonTitle">Сравнение алгоритмов</h1>
+        <p>Быстрый алгоритм, холодный MILP и MILP с тёплым стартом на одном входе.</p>
+      </div>
+      <div class="view-tabs" id="comparisonModes" role="tablist" aria-label="Источник сравнения">
+        <button type="button" role="tab" id="comparisonArchiveTab" aria-controls="comparisonArchive" aria-selected="true">Сохранённые запуски</button>
+        <button type="button" role="tab" id="comparisonLiveTab" aria-controls="comparisonLive" aria-selected="false" tabindex="-1">Новый расчёт</button>
+      </div>
+      <section id="comparisonArchive" class="comparison-controls" role="tabpanel" aria-labelledby="comparisonArchiveTab">
+        <label>Синтетический сценарий
+          <select id="comparisonDataset">
+            <option value="tight">500 заказов · строгие лимиты</option>
+            <option value="loose">500 заказов · более свободные лимиты</option>
+          </select>
+        </label>
+        <label>Повтор
+          <select id="comparisonRepeat">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+        </label>
+      </section>
+      <section id="comparisonLive" role="tabpanel" aria-labelledby="comparisonLiveTab" hidden>
+        <p id="comparisonStaticNote" class="comparison-note" hidden>Для нового сравнения запустите Python-сервер проекта. Сохранённые запуски доступны на этой странице.</p>
+        <form id="comparisonForm" class="comparison-controls">
+          <label>Сценарий
+            <select id="comparisonInput">
+              <option value="synthetic_comparison">Учебное сравнение · 30 заказов</option>
+              <option value="synthetic_small">Малый допустимый пример</option>
+              <option value="synthetic_infeasible">Несовместный пример</option>
+              <option value="file">Загрузить сценарий JSON</option>
+            </select>
+          </label>
+          <label id="comparisonFileLabel" hidden>Файл сценария
+            <input id="comparisonFile" type="file" accept=".json,application/json">
+          </label>
+          <label>Бюджет на метод, с
+            <input id="comparisonBudget" type="number" min="6" max="120" value="15" required>
+          </label>
+          <button id="comparisonRun" type="submit" class="primary">Запустить сравнение</button>
+        </form>
+      </section>
+      <p id="comparisonStatus" class="comparison-note" role="status" hidden></p>
+      <p id="comparisonError" class="planning-error" role="alert" hidden></p>
+      <section id="comparisonResult" class="comparison-result" aria-labelledby="comparisonResultTitle" hidden>
+        <div>
+          <h2 id="comparisonResultTitle">Результаты</h2>
+          <p id="comparisonContext" class="muted"></p>
+        </div>
+        <div id="comparisonMetrics" class="table-wrap" role="region" aria-labelledby="comparisonResultTitle" tabindex="0"></div>
+        <p id="comparisonSummary" class="comparison-summary" hidden></p>
+        <p class="comparison-note">Первый проверенный план — результат эвристики после независимой проверки. Первое событие решения HiGHS измеряется отдельно. Разрыв показывается относительно верхней границы.</p>
+        <div id="comparisonDetails"></div>
+      </section>
+    </main>
   </div>
 
   <div id="fieldHelp" class="help-popover" popover="auto" role="region" aria-labelledby="helpTitle">
