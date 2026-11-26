@@ -1,8 +1,9 @@
 import {
-  badge, button, el, formatNumber, get, helpButton, labels, plural, positionHelp, rowCount, tooltipButton, visValue,
+  badge, button, el, formatNumber, get, helpButton, initTabs, labels, plural, positionHelp, rowCount, tooltipButton, visValue,
 } from "./viewer_ui.js";
 import {addSortHeaders, commonBasis, sortRows, stageBody} from "./viewer_table.js";
 import {initOrdersPane} from "./viewer_orders_panel.js";
+import {initPlanning} from "./viewer_planning.js";
 const route = [
   [3, "Подача порошков"], [4, "Дозирование"], [6, "Прессовка"], [7, "Садка"],
   [8, "Печи"], [9, "Дополнительные операции"], [10, "Сдача"],
@@ -494,33 +495,19 @@ sourceDialog.addEventListener("close", () => {
   sourceTrigger = null;
 });
 
-const tabs = [...get("views").querySelectorAll('[role="tab"]')];
-
-function setView(id) {
-  for (const tab of tabs) {
-    const active = tab.id === id;
-    tab.setAttribute("aria-selected", String(active));
-    tab.tabIndex = active ? 0 : -1;
-    get(tab.getAttribute("aria-controls")).hidden = !active;
+const setView = initTabs(get("views"));
+const usesWorkbooks = document.documentElement.dataset.source === "workbooks";
+const planning = initPlanning({usesWorkbooks});
+const setWorkspace = initTabs(get("workspaceViews"), id => {
+  const url = new URL(location.href);
+  if (id === "tab-planning") {
+    url.searchParams.set("view", "planning");
+    planning.open();
+  } else {
+    url.searchParams.delete("view");
   }
-}
-
-get("views").addEventListener("click", event => {
-  if (tabs.includes(event.target)) setView(event.target.id);
-});
-get("views").addEventListener("keydown", event => {
-  const index = tabs.indexOf(event.target);
-  if (index === -1) return;
-  const destination = {
-    ArrowLeft: (index + tabs.length - 1) % tabs.length,
-    ArrowRight: (index + 1) % tabs.length,
-    Home: 0, End: tabs.length - 1,
-  }[event.key];
-  if (destination === undefined) return;
-  event.preventDefault();
-  const tab = tabs[destination];
-  setView(tab.id);
-  tab.focus();
+  if (url.href !== location.href) history.replaceState(history.state, "", url);
+  window.scrollTo(0, 0);
 });
 
 get("month").addEventListener("change", () => {
@@ -585,6 +572,7 @@ function initWorkbookAccess() {
     try {
       const {openWorkbookApi} = await import("./viewer_workbooks.js");
       workbookApi = await openWorkbookApi(value);
+      planning.setWorkbookApi(workbookApi);
     } catch (error) {
       try {
         if (sessionStorage.getItem(storageKey) === value) sessionStorage.removeItem(storageKey);
@@ -637,5 +625,6 @@ function initWorkbookAccess() {
 }
 
 initOrdersPane();
-if (document.documentElement.dataset.source === "workbooks") initWorkbookAccess();
+if (new URLSearchParams(location.search).get("view") === "planning") setWorkspace("tab-planning");
+if (usesWorkbooks) initWorkbookAccess();
 else init();

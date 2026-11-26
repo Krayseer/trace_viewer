@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "instance_id": "synthetic-infeasible",
+  "kind": "synthetic",
+  "horizon": "synthetic one-period example",
+  "score_scale": "synthetic comparable points",
+  "consumption_basis": "explicit synthetic tonnes per assignment",
+  "limits_source": "synthetic fixture, not enterprise stock",
+  "scores_source": "synthetic fixture, not production quality",
+  "components": {
+    "A": 1.0
+  },
+  "orders": [
+    {
+      "id": "O1",
+      "allowed_versions": [
+        "V1"
+      ],
+      "volume_tonnes": 1.0
+    },
+    {
+      "id": "O2",
+      "allowed_versions": [
+        "V1"
+      ],
+      "volume_tonnes": 1.0
+    }
+  ],
+  "options": [
+    {
+      "order_id": "O1",
+      "version_id": "V1",
+      "score": 10.0,
+      "consumption_tonnes": {
+        "A": 1.0
+      }
+    },
+    {
+      "order_id": "O2",
+      "version_id": "V1",
+      "score": 10.0,
+      "consumption_tonnes": {
+        "A": 1.0
+      }
+    }
+  ],
+  "volume_source": "synthetic fixture baseline, tonnes per order",
+  "volume_scaling": "linear_from_baseline",
+  "component_sources": {
+    "A": "synthetic fixture limit, not stock"
+  }
+}

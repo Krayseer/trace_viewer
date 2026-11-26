@@ -8,7 +8,8 @@ import webbrowser
 
 from .application import TraceApplication
 from .data import XlsDataset
-from .http_api import Handler, TraceServer
+from .http_api import Handler, TraceServer, WEB_ROOT
+from .planning_api import PlanningExamples
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -25,6 +26,9 @@ def main() -> None:
         dataset = XlsDataset(args.data)
         server.application = TraceApplication(dataset)
         server.sources = dataset
+        server.planning_examples = PlanningExamples(
+            WEB_ROOT / "planning_examples", PROJECT_ROOT / "implementation" / "planner" / "examples",
+        )
         url = f"http://127.0.0.1:{server.server_port}/"
         print(f"Маршрут заказа: {url}", flush=True)
         if args.open:

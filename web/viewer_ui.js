@@ -26,6 +26,38 @@ function button(label, action, className) {
   return node;
 }
 
+function initTabs(tabList, onChange = () => {}) {
+  const tabs = [...tabList.querySelectorAll('[role="tab"]')];
+  function activate(id) {
+    const changed = tabs.find(tab => tab.getAttribute("aria-selected") === "true")?.id !== id;
+    for (const tab of tabs) {
+      const active = tab.id === id;
+      tab.setAttribute("aria-selected", String(active));
+      tab.tabIndex = active ? 0 : -1;
+      get(tab.getAttribute("aria-controls")).hidden = !active;
+    }
+    if (changed) onChange(id);
+  }
+  tabList.addEventListener("click", event => {
+    if (tabs.includes(event.target)) activate(event.target.id);
+  });
+  tabList.addEventListener("keydown", event => {
+    const index = tabs.indexOf(event.target);
+    if (index === -1) return;
+    const destination = {
+      ArrowLeft: (index + tabs.length - 1) % tabs.length,
+      ArrowRight: (index + 1) % tabs.length,
+      Home: 0,
+      End: tabs.length - 1,
+    }[event.key];
+    if (destination === undefined) return;
+    event.preventDefault();
+    activate(tabs[destination].id);
+    tabs[destination].focus();
+  });
+  return activate;
+}
+
 function helpButton(title, ...paragraphs) {
   return tooltipButton("?", "help-button", title, ...paragraphs);
 }
@@ -101,6 +133,6 @@ function badge(tone) {
 }
 
 export {
-  badge, button, datePattern, el, formatNumber, get, helpButton, labels, plural, positionHelp,
+  badge, button, datePattern, el, formatNumber, get, helpButton, initTabs, labels, plural, positionHelp,
   rowCount, sortText, tooltipButton, visValue,
 };

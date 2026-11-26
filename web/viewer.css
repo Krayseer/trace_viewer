@@ -54,6 +54,7 @@
   --s24: 24px;
   --s30: 30px;
   --control: 36px;
+  --workspace-nav: calc(var(--control) + var(--s8) + 1px);
   --control-radius: 6px;
   --surface-radius: 8px;
 }
@@ -154,11 +155,11 @@ label { display: block; margin-bottom: var(--s4); }
 .workspace[data-orders-resizing] { cursor: col-resize; user-select: none; }
 .orders-pane {
   position: sticky;
-  top: 0;
+  top: var(--workspace-nav);
   z-index: 2;
   display: flex;
   flex-direction: column;
-  height: 100dvh;
+  height: calc(100dvh - var(--workspace-nav));
   background: var(--surface);
   border-right: 1px solid var(--line);
 }
@@ -318,7 +319,16 @@ main { min-width: 0; padding: var(--s16) var(--s20) var(--s24); container-type: 
   background: var(--danger-fill);
 }
 
-#views { display: flex; flex-wrap: wrap; gap: 0 var(--s30); border-bottom: 1px solid var(--line); }
+.view-tabs { display: flex; flex-wrap: wrap; gap: 0 var(--s30); border-bottom: 1px solid var(--line); }
+.workspace-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  flex-wrap: nowrap;
+  height: var(--workspace-nav);
+  padding: var(--s8) var(--s16) 0;
+  background: var(--surface);
+}
 [role="tab"] {
   height: var(--control);
   margin-bottom: -1px;
@@ -581,6 +591,97 @@ tbody tr:first-child > :last-child { border-top-right-radius: var(--surface-radi
 tbody tr:last-child > :first-child { border-bottom-left-radius: var(--surface-radius); }
 tbody tr:last-child > :last-child { border-bottom-right-radius: var(--surface-radius); }
 tbody tr:hover > * { background: var(--selection); }
+
+.planning-workspace fieldset { min-inline-size: 0; margin: 0; padding: 0; border: 0; }
+.planning-picker { overflow-y: auto; overscroll-behavior-y: contain; }
+.planning-examples { display: grid; gap: var(--s16); padding: 0 var(--s10) var(--s16); }
+.planning-examples h3 { margin: 0 var(--s8) var(--s4); font-size: 12px; line-height: 16px; color: var(--muted); }
+.planning-examples ul { display: grid; gap: var(--s4); padding: 0; margin: 0; list-style: none; }
+.planning-examples button { min-height: 36px; }
+#planningAccessNote { margin: var(--s8) var(--s8) 0; }
+.planning-actions {
+  display: grid;
+  gap: var(--s10);
+  padding: var(--s16);
+  border-top: 1px solid var(--line);
+}
+.planning-basis { margin-top: var(--s4); max-width: 78ch; }
+#planningOverview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.planning [role="tab"], .planning input { scroll-margin-top: calc(var(--workspace-nav) + var(--s8)); }
+.planning-view { padding-top: var(--s16); }
+.planning-help { margin-bottom: var(--s8); }
+.planning-details, .planning-limit-sources { margin-top: var(--s16); }
+.planning-details > p { margin-top: var(--s8); overflow-wrap: anywhere; }
+.planning-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 178px), 1fr));
+  gap: var(--s16);
+  margin: 0;
+  padding: var(--s16);
+  border: 1px solid var(--line);
+  border-radius: var(--surface-radius);
+  background: var(--surface);
+}
+.planning-details .planning-facts { margin-top: var(--s8); }
+.planning-facts dt { margin-bottom: var(--s4); color: var(--muted); font-size: 12px; line-height: 16px; }
+.planning-facts dd { margin: 0; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+#planningAssumptions { grid-template-columns: repeat(auto-fit, minmax(min(100%, 255px), 1fr)); }
+.planning .table-wrap { max-height: min(550px, 62dvh); overflow: auto; }
+.planning thead th { position: sticky; z-index: 1; top: 0; background: var(--canvas); }
+.planning td { overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.planning td.measure { white-space: nowrap; }
+#planningPlan th:nth-child(n + 3),
+#planningOrders th:last-child,
+#planningResources th:nth-child(n + 2):nth-child(-n + 4) { text-align: right; }
+.planning td small { display: block; font-size: 12px; line-height: 16px; }
+#planningLimitSources td:first-child { width: 42%; }
+.planning-input-cell { width: 150px; }
+.planning-input-cell input { max-width: 130px; min-width: 80px; text-align: right; }
+.planning-error {
+  margin-bottom: var(--s10);
+  padding: var(--s8) var(--s10);
+  border-radius: var(--control-radius);
+  color: var(--danger-text);
+  background: var(--danger-fill);
+  overflow-wrap: anywhere;
+}
+.planning-status[data-tone="success"] { color: var(--success-text); border-left: 3px solid var(--success-text); }
+.planning-status[data-tone="warning"] { color: var(--warning-text); border-left: 3px solid var(--warning-rule); }
+.planning-status[data-tone="error"] { color: var(--danger-text); border-left: 3px solid var(--danger-rule); }
+#planningResources table { min-width: 470px; }
+.planning-utilization { width: 112px; }
+.planning-track {
+  display: block;
+  height: 4px;
+  margin-block: var(--s4);
+  border-radius: var(--s4);
+  overflow: hidden;
+  background: var(--line);
+}
+.planning-track > span { display: block; height: 100%; background: var(--accent); }
+[data-bottleneck] .planning-track > span { background: var(--warning-rule); }
+
+@container (max-width: 535px) {
+  #planningViews { gap: 0 var(--s10); }
+}
+@container (max-width: 460px) {
+  #planningOverview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 1240px) {
+  .planning-workspace { --orders-width: 224px; }
+}
+@media (max-width: 760px), (max-height: 360px) {
+  .planning-examples { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--s8); padding-bottom: var(--s8); }
+  .planning-actions { align-items: end; grid-template-columns: 1.2fr minmax(80px, .72fr) 1fr; padding-block: var(--s10); }
+  .planning-actions button { padding-inline: var(--s8); min-height: var(--control); height: auto; }
+}
+@media (max-width: 380px) {
+  .planning-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #planningImport { grid-column: 1 / -1; justify-self: start; }
+}
 .records td { overflow-wrap: break-word; }
 .records td > small { display: block; color: var(--muted); font-size: 12px; line-height: 16px; }
 .records td:first-child { font-variant-numeric: tabular-nums; }

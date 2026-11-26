@@ -8,7 +8,12 @@
   <script type="module" src="./viewer.js"></script>
 </head>
 <body>
-  <div id="workspace" class="workspace">
+  <div id="workspaceViews" class="view-tabs workspace-tabs" role="tablist" aria-label="Разделы приложения">
+    <button type="button" role="tab" id="tab-orders" aria-controls="workspace" aria-selected="true">Маршруты заказов</button>
+    <button type="button" role="tab" id="tab-planning" aria-controls="planningPanel" aria-selected="false" tabindex="-1">Планирование</button>
+  </div>
+
+  <div id="workspace" class="workspace" role="tabpanel" aria-labelledby="tab-orders">
     <aside id="ordersPane" class="orders-pane" aria-labelledby="pickerTitle">
       <div class="orders-top">
         <h2 id="pickerTitle">Заказы</h2>
@@ -87,7 +92,7 @@
       <p id="status" class="sr-only" role="status"></p>
 
       <div id="content" hidden>
-        <div id="views" role="tablist" aria-label="Разделы заказа">
+        <div id="views" class="view-tabs" role="tablist" aria-label="Разделы заказа">
           <button type="button" role="tab" id="tab-route" aria-controls="view-route" aria-selected="true">Маршрут</button>
           <button type="button" role="tab" id="tab-catalog" aria-controls="view-catalog" aria-selected="false" tabindex="-1">Шихта</button>
           <button type="button" role="tab" id="tab-context" aria-controls="view-context" aria-selected="false" tabindex="-1">Проценты и простои</button>
@@ -103,6 +108,109 @@
         <section id="view-context" role="tabpanel" aria-labelledby="tab-context" tabindex="0" hidden></section>
       </div>
     </main>
+  </div>
+
+  <div id="planningPanel" role="tabpanel" aria-labelledby="tab-planning" hidden>
+    <form id="planningForm" class="workspace planning-workspace" novalidate>
+      <aside class="orders-pane planning-sidebar" aria-labelledby="planningPickerTitle">
+        <div class="orders-top"><h2 id="planningPickerTitle">Сценарии</h2></div>
+        <fieldset class="planning-picker">
+          <legend class="sr-only">Выбор сценария и параметры расчёта</legend>
+          <div id="planningExamples" class="planning-examples">
+            <section aria-labelledby="planningSyntheticTitle">
+              <h3 id="planningSyntheticTitle">Учебные</h3>
+              <ul role="list">
+                <li><button class="order-item" type="button" data-example="synthetic_small" aria-current="true">Два заказа</button></li>
+                <li><button class="order-item" type="button" data-example="synthetic_infeasible">Несовместимые лимиты</button></li>
+              </ul>
+            </section>
+            <section aria-labelledby="planningWorkbooksTitle">
+              <h3 id="planningWorkbooksTitle">Из выгрузок</h3>
+              <ul role="list">
+                <li><button class="order-item" type="button" data-example="march_subset_scenario">Март 2022</button></li>
+                <li><button class="order-item" type="button" data-example="may_integration_scenario">Май 2022</button></li>
+              </ul>
+              <p id="planningAccessNote" class="muted caption" hidden>Чтобы открыть примеры, введите ключ во вкладке «Маршруты заказов».</p>
+            </section>
+          </div>
+          <div class="planning-actions">
+            <input id="planningFile" type="file" accept=".json,application/json" hidden>
+            <button id="planningImport" class="quiet" type="button">Загрузить JSON</button>
+            <div class="planning-time">
+              <label for="planningSeconds">Лимит решателя, с</label>
+              <input id="planningSeconds" type="number" min="0" step="any" value="30">
+            </div>
+            <button id="planningSolve" class="primary" type="submit" disabled>Пересчитать</button>
+          </div>
+        </fieldset>
+      </aside>
+
+      <main class="planning" aria-labelledby="planningTitle">
+        <header class="order">
+          <div class="order-heading"><h1 id="planningTitle">Планирование шихты</h1></div>
+          <p id="planningBasis" class="planning-basis muted" hidden></p>
+          <dl id="planningOverview" class="order-facts" hidden>
+            <div><dt>Заказы</dt><dd id="planningOrderCount"></dd></div>
+            <div><dt>Компоненты</dt><dd id="planningComponentCount"></dd></div>
+            <div><dt>Назначено заказов</dt><dd id="planningAssigned">–</dd></div>
+            <div><dt>Цель, баллы</dt><dd id="planningObjective">–</dd></div>
+          </dl>
+        </header>
+
+        <p id="planningStatus" class="planning-status transition" role="status">Выберите сценарий.</p>
+        <p id="planningError" class="planning-error" role="alert" hidden></p>
+        <div id="planningContent" hidden>
+          <div id="planningViews" class="view-tabs" role="tablist" aria-label="Разделы сценария">
+            <button type="button" role="tab" id="planningTabPlan" aria-controls="planningViewPlan" aria-selected="true">План</button>
+            <button type="button" role="tab" id="planningTabResources" aria-controls="planningViewResources" aria-selected="false" tabindex="-1">Расход</button>
+            <button type="button" role="tab" id="planningTabOrders" aria-controls="planningViewOrders" aria-selected="false" tabindex="-1">Заказы</button>
+            <button type="button" role="tab" id="planningTabLimits" aria-controls="planningViewLimits" aria-selected="false" tabindex="-1">Лимиты</button>
+            <button type="button" role="tab" id="planningTabSources" aria-controls="planningViewSources" aria-selected="false" tabindex="-1">Источники</button>
+          </div>
+
+          <section id="planningViewPlan" class="planning-view" role="tabpanel" aria-labelledby="planningTabPlan" tabindex="0">
+            <div id="planningPlanOutput" hidden>
+              <section id="planningPlanSection" class="data-section" aria-labelledby="planningPlanTitle">
+                <div class="data-heading"><h2 id="planningPlanTitle">Назначения рецептур</h2></div>
+                <div id="planningPlan" class="table-wrap" role="region" aria-labelledby="planningPlanTitle" tabindex="0"></div>
+              </section>
+              <details class="reference planning-details">
+                <summary>Проверка и детали расчёта</summary>
+                <dl id="planningSummary" class="planning-facts"></dl>
+                <p id="planningSolverMessage" class="muted caption"></p>
+              </details>
+            </div>
+          </section>
+          <section id="planningViewResources" class="planning-view" role="tabpanel" aria-labelledby="planningTabResources" tabindex="0" hidden>
+            <div id="planningResourcesOutput" hidden>
+              <div class="data-heading"><h2 id="planningResourcesTitle">Расход по компонентам</h2></div>
+              <p class="muted caption planning-help">Узкое место отмечается, если остаток составляет до 5% положительного лимита или укладывается в численный допуск.</p>
+              <div id="planningResources" class="table-wrap" role="region" aria-labelledby="planningResourcesTitle" tabindex="0"></div>
+            </div>
+          </section>
+          <section id="planningViewOrders" class="planning-view" role="tabpanel" aria-labelledby="planningTabOrders" tabindex="0" hidden>
+            <div class="data-heading"><h2 id="planningOrdersTitle">Объёмы заказов</h2></div>
+            <fieldset aria-labelledby="planningOrdersTitle">
+              <div id="planningOrders" class="table-wrap" role="region" aria-labelledby="planningOrdersTitle" tabindex="0"></div>
+            </fieldset>
+          </section>
+          <section id="planningViewLimits" class="planning-view" role="tabpanel" aria-labelledby="planningTabLimits" tabindex="0" hidden>
+            <div class="data-heading"><h2 id="planningLimitsTitle">Лимиты компонентов</h2></div>
+            <fieldset aria-labelledby="planningLimitsTitle">
+              <div id="planningLimits" class="table-wrap" role="region" aria-labelledby="planningLimitsTitle" tabindex="0"></div>
+            </fieldset>
+          </section>
+          <section id="planningViewSources" class="planning-view" role="tabpanel" aria-labelledby="planningTabSources" tabindex="0" hidden>
+            <div class="data-heading"><h2>Источники и допущения</h2></div>
+            <dl id="planningAssumptions" class="planning-facts"></dl>
+            <section class="planning-limit-sources" aria-labelledby="planningLimitSourcesTitle">
+              <div class="data-heading"><h3 id="planningLimitSourcesTitle">Источники исходных лимитов</h3></div>
+              <div id="planningLimitSources" class="table-wrap" role="region" aria-labelledby="planningLimitSourcesTitle" tabindex="0"></div>
+            </section>
+          </section>
+        </div>
+      </main>
+    </form>
   </div>
 
   <div id="fieldHelp" class="help-popover" popover="auto" role="region" aria-labelledby="helpTitle">
